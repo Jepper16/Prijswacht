@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="5c3107f791a8e39" content="5c1863b64b4bf718991739bb06725432" />
+<title>PrijsWacht — Volg prijsdalingen</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#07070d;
+  --surface:#0f0f1a;
+  --border:rgba(255,255,255,0.06);
+  --accent:#00e5a0;
+  --accent2:#00b8ff;
+  --text:#eeeef5;
+  --muted:#6060a0;
+}
+
+html{scroll-behavior:smooth}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-weight:300;
+  overflow-x:hidden;
+}
+
+/* Grid overlay */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
+  background-size:60px 60px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* NAV */
+nav{
+  position:fixed;
+  top:0;left:0;right:0;
+  z-index:100;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px 40px;
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+
+.nav-logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:24px;
+  letter-spacing:2px;
+  color:var(--accent);
+}
+
+.nav-links{display:flex;gap:32px;list-style:none}
+.nav-links a{
+  color:var(--muted);
+  text-decoration:none;
+  font-size:13px;
+  letter-spacing:0.5px;
+  transition:color 0.2s;
+}
+.nav-links a:hover{color:var(--text)}
+
+.nav-cta{
+  background:var(--accent);
+  color:#000;
+  padding:10px 22px;
+  border-radius:6px;
+  font-size:13px;
+  font-weight:500;
+  text-decoration:none;
+  letter-spacing:0.3px;
+  transition:opacity 0.2s;
+}
+.nav-cta:hover{opacity:0.85}
+
+/* HERO */
+.hero{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:120px 40px 80px;
+  position:relative;
+  z-index:1;
+  max-width:1200px;
+  margin:0 auto;
+}
+
+.hero-label{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:11px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin-bottom:28px;
+  animation:fadeUp 0.6s ease both;
+}
+
+.hero-label::before{
+  content:'';
+  width:24px;height:1px;
+  background:var(--accent);
+}
+
+h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(72px, 12vw, 160px);
+  line-height:0.9;
+  letter-spacing:-2px;
+  animation:fadeUp 0.6s ease 0.1s both;
+}
+
+h1 .accent{
+  -webkit-text-stroke:2px var(--accent);
+  color:transparent;
+}
+
+.hero-sub{
+  font-size:clamp(16px,2vw,20px);
+  color:var(--muted);
+  max-width:480px;
+  line-height:1.7;
+  margin-top:28px;
+  animation:fadeUp 0.6s ease 0.2s both;
+}
+
+.hero-actions{
+  display:flex;
+  gap:16px;
+  margin-top:44px;
+  flex-wrap:wrap;
+  animation:fadeUp 0.6s ease 0.3s both;
+}
+
+.btn-primary{
+  background:var(--accent);
+  color:#000;
+  padding:16px 32px;
+  border-radius:6px;
+  font-size:14px;
+  font-weight:500;
+  text-decoration:none;
+  letter-spacing:0.3px;
+  transition:transform 0.2s, opacity 0.2s;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn-primary:hover{transform:translateY(-2px);opacity:0.9}
+
+.btn-ghost{
+  border:1px solid var(--border);
+  color:var(--muted);
+  padding:16px 32px;
+  border-radius:6px;
+  font-size:14px;
+  text-decoration:none;
+  letter-spacing:0.3px;
+  transition:border-color 0.2s,color 0.2s;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn-ghost:hover{border-color:var(--muted);color:var(--text)}
+
+/* Floating price card */
+.hero-visual{
+  position:absolute;
+  right:40px;
+  top:50%;
+  transform:translateY(-50%);
+  animation:fadeUp 0.6s ease 0.4s both, float 4s ease-in-out infinite;
+}
+
+@keyframes float{
+  0%,100%{transform:translateY(-50%) translateY(0)}
+  50%{transform:translateY(-50%) translateY(-16px)}
+}
+
+.price-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:24px;
+  width:280px;
+  position:relative;
+  overflow:hidden;
+}
+
+.price-card::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+}
+
+.card-shop{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.card-name{font-size:15px;font-weight:500;margin-top:4px;color:var(--text)}
+
+.card-prices{display:flex;align-items:baseline;gap:10px;margin-top:14px}
+.card-now{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:var(--accent)}
+.card-was{font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);text-decoration:line-through}
+.card-drop{
+  background:rgba(255,77,109,0.15);
+  color:#ff4d6d;
+  font-size:11px;font-weight:700;
+  padding:3px 8px;border-radius:20px;
+  font-family:'DM Mono',monospace;
+}
+
+.card-bar{
+  height:4px;
+  background:rgba(255,255,255,0.06);
+  border-radius:2px;
+  margin-top:16px;
+  overflow:hidden;
+}
+.card-bar-fill{
+  height:100%;
+  width:71%;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border-radius:2px;
+  animation:barGrow 1.5s ease 0.8s both;
+}
+@keyframes barGrow{from{width:0}to{width:71%}}
+
+.card-label{font-size:10px;color:var(--muted);margin-top:6px;letter-spacing:0.5px}
+
+.card-btn{
+  display:block;
+  width:100%;
+  margin-top:16px;
+  background:var(--accent);
+  color:#000;
+  border:none;
+  border-radius:10px;
+  padding:12px;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  transition:opacity 0.2s;
+}
+.card-btn:hover{opacity:0.85}
+
+/* Ping dot */
+.ping{
+  position:absolute;
+  top:20px;right:20px;
+  width:10px;height:10px;
+}
+.ping::before,.ping::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:var(--accent);
+}
+.ping::after{
+  animation:ping 1.5s ease-out infinite;
+  opacity:0;
+}
+@keyframes ping{
+  0%{transform:scale(1);opacity:0.8}
+  100%{transform:scale(2.5);opacity:0}
+}
+
+/* STATS */
+.stats{
+  display:flex;
+  gap:1px;
+  background:var(--border);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  position:relative;z-index:1;
+}
+.stat{
+  flex:1;
+  padding:40px;
+  background:var(--bg);
+  text-align:center;
+}
+.stat-num{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:52px;
+  color:var(--accent);
+  letter-spacing:1px;
+  line-height:1;
+}
+.stat-label{font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:0.5px}
+
+/* HOW */
+.how{
+  max-width:1200px;
+  margin:0 auto;
+  padding:120px 40px;
+  position:relative;z-index:1;
+}
+
+.section-label{
+  font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--accent);margin-bottom:16px;
+  display:flex;align-items:center;gap:8px;
+}
+.section-label::before{content:'';width:24px;height:1px;background:var(--accent)}
+
+h2{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(40px,6vw,72px);
+  letter-spacing:-1px;
+  line-height:1;
+  margin-bottom:60px;
+}
+
+.steps-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+}
+
+.step{
+  background:var(--surface);
+  padding:36px 32px;
+  position:relative;
+  transition:background 0.3s;
+}
+.step:hover{background:#141428}
+
+.step-num{
+  font-family:'DM Mono',monospace;
+  font-size:11px;
+  color:var(--accent);
+  letter-spacing:1px;
+  margin-bottom:20px;
+}
+
+.step-icon{
+  font-size:28px;
+  margin-bottom:16px;
+  display:block;
+}
+
+.step h3{
+  font-size:17px;
+  font-weight:500;
+  margin-bottom:10px;
+  color:var(--text);
+}
+
+.step p{
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.7;
+}
+
+/* FEATURES */
+.features{
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:120px 40px;
+  position:relative;z-index:1;
+}
+
+.features-inner{max-width:1200px;margin:0 auto}
+
+.features-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:40px;
+  margin-top:60px;
+}
+
+.feature{
+  display:flex;
+  gap:20px;
+  align-items:flex-start;
+}
+
+.feature-dot{
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--accent);
+  margin-top:6px;
+  flex-shrink:0;
+}
+
+.feature h3{font-size:15px;font-weight:500;margin-bottom:6px}
+.feature p{font-size:13px;color:var(--muted);line-height:1.7}
+
+/* CTA */
+.cta{
+  max-width:1200px;
+  margin:0 auto;
+  padding:120px 40px;
+  text-align:center;
+  position:relative;z-index:1;
+}
+
+.cta h2{margin-bottom:20px}
+.cta p{color:var(--muted);font-size:16px;margin-bottom:44px;line-height:1.7}
+
+/* FOOTER */
+footer{
+  border-top:1px solid var(--border);
+  padding:40px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  position:relative;z-index:1;
+  max-width:1200px;
+  margin:0 auto;
+}
+
+.footer-logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:20px;
+  letter-spacing:2px;
+  color:var(--accent);
+}
+
+footer p{font-size:12px;color:var(--muted)}
+
+/* Animations */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.reveal{
+  opacity:0;
+  transform:translateY(24px);
+  transition:opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* Mobile */
+@media(max-width:768px){
+  nav{padding:16px 20px}
+  .nav-links{display:none}
+  .hero{padding:100px 20px 60px}
+  .hero-visual{display:none}
+  .stats{flex-direction:column;gap:0}
+  .how,.features-inner,.cta{padding-left:20px;padding-right:20px}
+  .features-grid{grid-template-columns:1fr}
+  footer{flex-direction:column;gap:12px;text-align:center;padding:30px 20px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">🔔 PrijsWacht</div>
+  <ul class="nav-links">
+    <li><a href="#hoe">Hoe het werkt</a></li>
+    <li><a href="#functies">Functies</a></li>
+  </ul>
+  <a href="#download" class="nav-cta">Download gratis</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-label">Prijsvergelijker app</div>
+  <h1>Nooit meer<br>te <span class="accent">veel</span><br>betalen</h1>
+  <p class="hero-sub">PrijsWacht volgt automatisch prijzen bij Bol.com, Coolblue en meer. Jij krijgt een melding zodra de prijs daalt.</p>
+  <div class="hero-actions">
+    <a href="#download" class="btn-primary">📱 Download de app</a>
+    <a href="#hoe" class="btn-ghost">Hoe het werkt →</a>
+  </div>
+
+  <!-- Floating card -->
+  <div class="hero-visual">
+    <div class="price-card">
+      <div class="ping"></div>
+      <div class="card-shop">Bol.com · Live alert</div>
+      <div class="card-name">Sony WH-1000XM5</div>
+      <div class="card-prices">
+        <span class="card-now">€249</span>
+        <span class="card-was">€349</span>
+        <span class="card-drop">-29%</span>
+      </div>
+      <div class="card-bar"><div class="card-bar-fill"></div></div>
+      <div class="card-label">71% van doelprijs bereikt</div>
+      <button class="card-btn">Kopen via Bol.com →</button>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat reveal">
+    <div class="stat-num">€89</div>
+    <div class="stat-label">Gemiddeld bespaard per week</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-num">14</div>
+    <div class="stat-label">Producten tegelijk volgen</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-num">3</div>
+    <div class="stat-label">Grote webshops gekoppeld</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-num">0€</div>
+    <div class="stat-label">Kosten voor gebruikers</div>
+  </div>
+</div>
+
+<!-- HOW -->
+<section class="how" id="hoe">
+  <div class="section-label">Hoe het werkt</div>
+  <h2>In 3 stappen<br>besparen</h2>
+  <div class="steps-grid">
+    <div class="step reveal">
+      <div class="step-num">01</div>
+      <span class="step-icon">🔍</span>
+      <h3>Zoek een product</h3>
+      <p>Voeg elk product toe uit Bol.com, Coolblue of MediaMarkt. Stel jouw doelprijs in.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">02</div>
+      <span class="step-icon">👁️</span>
+      <h3>Wij houden het bij</h3>
+      <p>PrijsWacht checkt dagelijks automatisch of de prijs is gedaald — zonder dat jij iets hoeft te doen.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">03</div>
+      <span class="step-icon">🔔</span>
+      <h3>Jij krijgt een melding</h3>
+      <p>Zodra de prijs onder jouw doelprijs zakt stuur je een pushmelding. Eén tik en je bent bij de winkel.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="functies">
+  <div class="features-inner">
+    <div class="section-label">Functies</div>
+    <h2>Alles wat je<br>nodig hebt</h2>
+    <div class="features-grid">
+      <div class="feature reveal">
+        <div class="feature-dot"></div>
+        <div>
+          <h3>Prijsgeschiedenis grafiek</h3>
+          <p>Zie in één oogopslag hoe een prijs zich heeft ontwikkeld. Zo weet je of een "aanbieding" echt goedkoper is.</p>
+        </div>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-dot"></div>
+        <div>
+          <h3>Doelprijs instellen</h3>
+          <p>Bepaal zelf voor welke prijs jij wilt kopen. Je krijgt alleen een melding als die prijs bereikt is.</p>
+        </div>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-dot"></div>
+        <div>
+          <h3>Bol.com, Coolblue & meer</h3>
+          <p>Wij ondersteunen de grootste Nederlandse webshops zodat je alles op één plek bijhoudt.</p>
+        </div>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-dot"></div>
+        <div>
+          <h3>Push notificaties</h3>
+          <p>Mis nooit meer een prijsdaling. Meldingen komen direct op je iPhone — ook als de app gesloten is.</p>
+        </div>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-dot"></div>
+        <div>
+          <h3>Volledig gratis</h3>
+          <p>PrijsWacht is gratis te downloaden en te gebruiken. Geen abonnement, geen verborgen kosten.</p>
+        </div>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-dot"></div>
+        <div>
+          <h3>Donker thema</h3>
+          <p>Strak donker design dat prettig is voor je ogen, ook 's avonds als je aan het shoppen bent.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="download">
+  <div class="section-label" style="justify-content:center">Download</div>
+  <h2>Begin vandaag<br>met besparen</h2>
+  <p>Gratis downloaden. Geen registratie vereist.<br>Binnen 1 minuut je eerste product aan het volgen.</p>
+  <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+    <a href="#" class="btn-primary" style="font-size:16px;padding:18px 40px">📱 App Store — iOS</a>
+    <a href="#" class="btn-ghost" style="font-size:16px;padding:18px 40px">🤖 Google Play</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">🔔 PrijsWacht</div>
+  <p>© 2026 PrijsWacht · Volg prijsdalingen bij Nederlandse webshops</p>
+</footer>
+
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if(e.isIntersecting){
+      setTimeout(() => e.target.classList.add('visible'), i * 80);
+    }
+  });
+}, {threshold: 0.1});
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
